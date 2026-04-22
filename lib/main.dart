@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'telainicial/maininicial.dart';
+import 'telainicial.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,12 +11,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'XD',
+      title: 'App Treino',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const TelaInicial(), 
+      home: const TelaInicial(),
     );
   }
 }
