@@ -8,44 +8,45 @@ class TelaInicial extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF121212), 
       body: SafeArea(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Container(
-                width: 150, height: 150,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.black, width: 3),
-                ),
-                child: const Center(child: Text('logo', style: TextStyle(fontSize: 20, color: Colors.black))),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(250, 60),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    side: const BorderSide(color: Colors.black, width: 3),
+              Image.asset('assets/imagem.jpg', width: 280, height: 280),
+              Column(
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(300, 65),
+                      backgroundColor: const Color(0xFF2EFE2E),
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(35)),
+                      elevation: 10,
+                      shadowColor: const Color(0xFF2EFE2E).withOpacity(0.5),
+                    ),
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const TelaLogin()));
+                    },
+                    child: const Text(
+                      'Login',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                    ),
                   ),
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  elevation: 0,
-                ),
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const TelaLogin()));
-                },
-                child: const Text('login', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const TelaCadastro()));
-                },
-                child: const Text(
-                  'não tem uma conta? cadastre-se',
-                  style: TextStyle(color: Colors.black, fontSize: 16, decoration: TextDecoration.underline),
-                ),
+                  const SizedBox(height: 25),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const TelaCadastro()));
+                    },
+                    child: const Text(
+                      'Ainda não tem uma conta? Cadastre-se',
+                      style: TextStyle(
+                        color: Color(0xFF2EFE2E), fontSize: 14, fontWeight: FontWeight.bold, decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

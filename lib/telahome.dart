@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'banco.dart';
+import 'telainicial.dart';
 
 class TelaHome extends StatefulWidget {
   const TelaHome({super.key});
@@ -9,8 +10,6 @@ class TelaHome extends StatefulWidget {
 }
 
 class _TelaHomeState extends State<TelaHome> {
-  int _abaSelecionada = 0; 
-
   final List<String> diasDaSemana = [
     'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'
   ];
@@ -18,59 +17,52 @@ class _TelaHomeState extends State<TelaHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: const Color(0xFF121212),
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
+        automaticallyImplyLeading: false, // Tira a setinha de voltar
         title: const Text(
           'MEUS TREINOS',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 2),
+          style: TextStyle(
+            color: Color(0xFF2EFE2E), 
+            fontWeight: FontWeight.w900, 
+            letterSpacing: 3
+          ),
         ),
       ),
-      body: _abaSelecionada == 0 
-          ? _construirAbaTreinos(context) 
-          : const Center(
-              child: Text('Em construção 🚧', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _abaSelecionada,
-        onTap: (index) {
-          setState(() {
-            _abaSelecionada = index;
-          });
-        },
-        backgroundColor: Colors.white,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: false,
-        elevation: 10,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Progresso'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
-        ],
-      ),
-    );
-  }
-
-  Widget _construirAbaTreinos(BuildContext context) {
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        child: Column(
-          children: [
-            const SizedBox(height: 30),
-            Container(
-              width: 100, height: 100,
-              decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.black, width: 3)),
-              child: const Center(child: Text('LOGO')),
-            ),
-            const SizedBox(height: 30),
-            ...diasDaSemana.map((dia) => _botaoDia(context, dia)).toList(),
-            const SizedBox(height: 20),
-          ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              Image.asset('assets/imagem.jpg', width: 120, height: 120),
+              const SizedBox(height: 30),
+              ...diasDaSemana.map((dia) => _botaoDia(context, dia)).toList(),
+              const SizedBox(height: 30),
+              
+              // BOTÃO DE SAIR NO FINAL DA LISTA
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 55),
+                  side: const BorderSide(color: Colors.redAccent),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const TelaInicial()),
+                    (route) => false,
+                  );
+                },
+                icon: const Icon(Icons.logout, color: Colors.redAccent),
+                label: const Text('SAIR DA ACADEMIA', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w900)),
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
@@ -78,25 +70,45 @@ class _TelaHomeState extends State<TelaHome> {
 
   Widget _botaoDia(BuildContext context, String texto) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 15.0),
+      padding: const EdgeInsets.only(bottom: 12.0),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          minimumSize: const Size(double.infinity, 55),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: const BorderSide(color: Colors.black, width: 3)),
-          backgroundColor: Colors.white, foregroundColor: Colors.black, elevation: 0, alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          minimumSize: const Size(double.infinity, 60),
+          backgroundColor: const Color(0xFF1E1E1E),
+          foregroundColor: const Color(0xFF2EFE2E),
+          elevation: 0,
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 25),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: Color(0xFF333333), width: 1),
+          ),
         ),
         onPressed: () async {
           List<String> exerciciosDoBanco = await BancoDeDados.instancia.pegarExerciciosDoDia(texto);
           if (exerciciosDoBanco.isEmpty) {
-            await BancoDeDados.instancia.inserirExercicio(texto, 'Exercício 01 - $texto');
-            await BancoDeDados.instancia.inserirExercicio(texto, 'Exercício 02 - $texto');
+            await BancoDeDados.instancia.inserirExercicio(texto, 'SUPINO RETO - 4x10');
+            await BancoDeDados.instancia.inserirExercicio(texto, 'AGACHAMENTO LIVRE - 3x12');
             exerciciosDoBanco = await BancoDeDados.instancia.pegarExerciciosDoDia(texto);
           }
-          if (!context.mounted) return;
-          Navigator.push(context, MaterialPageRoute(builder: (context) => TelaDiaSemana(nomeDoDia: texto, exercicios: exerciciosDoBanco)));
+          if (!mounted) return;
+          Navigator.push(
+            context, 
+            MaterialPageRoute(
+              builder: (context) => TelaDiaSemana(nomeDoDia: texto, exercicios: exerciciosDoBanco)
+            )
+          );
         },
-        child: Text(texto.toUpperCase(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              texto.toUpperCase(), 
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 1.2)
+            ),
+            const Icon(Icons.arrow_forward_ios, size: 16),
+          ],
+        ),
       ),
     );
   }
@@ -111,17 +123,20 @@ class TelaDiaSemana extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(nomeDoDia.toUpperCase(), style: const TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF121212),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFF2EFE2E)),
+        title: Text(
+          nomeDoDia.toUpperCase(), 
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)
+        ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(30.0),
+        padding: const EdgeInsets.all(25.0),
         child: Column(
           children: [
-            const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
                 itemCount: exercicios.length,
@@ -129,16 +144,35 @@ class TelaDiaSemana extends StatelessWidget {
                   return Container(
                     margin: const EdgeInsets.only(bottom: 15),
                     padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(15), border: Border.all(color: Colors.black, width: 2)),
-                    child: Text(exercicios[index], style: const TextStyle(fontSize: 16)),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E1E1E),
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: const Color(0xFF2EFE2E).withOpacity(0.3), width: 1),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.check_circle_outline, color: Color(0xFF2EFE2E)),
+                        const SizedBox(width: 15),
+                        Text(
+                          exercicios[index], 
+                          style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
             ),
+            const SizedBox(height: 20),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white, minimumSize: const Size(double.infinity, 50)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2EFE2E),
+                foregroundColor: Colors.black,
+                minimumSize: const Size(double.infinity, 55),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              ),
               onPressed: () => Navigator.pop(context),
-              child: const Text('VOLTAR'),
+              child: const Text('VOLTAR AOS DIAS', style: TextStyle(fontWeight: FontWeight.w900)),
             ),
           ],
         ),
