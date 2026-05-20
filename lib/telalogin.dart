@@ -11,12 +11,24 @@ class TelaLogin extends StatefulWidget {
 }
 
 class _TelaLoginState extends State<TelaLogin> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _senhaController = TextEditingController();
+  final TextEditingController _usuarioController =
+      TextEditingController();
+
+  final TextEditingController _senhaController =
+      TextEditingController();
+
+  bool _isLoading = false;
 
   Future<void> fazerLogin() async {
-    String username = _emailController.text.trim();
-    String password = _senhaController.text.trim();
+    setState(() {
+      _isLoading = true;
+    });
+
+    final usuario =
+        _usuarioController.text.trim();
+
+    final senha =
+        _senhaController.text.trim();
 
     final url = Uri.parse(
       'https://mobile-ios-login.zani0x03.eti.br/api/auth/login',
@@ -26,58 +38,73 @@ class _TelaLoginState extends State<TelaLogin> {
       final response = await http.post(
         url,
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type':
+              'application/json',
         },
         body: jsonEncode({
-          "username": username,
-          "password": password,
-          "sistemaId": "d7f0beee-ac36-4cdf-8dba-7c752ace6ec6"
+          "username": usuario,
+          "password": senha,
+          "sistemaId": "95a33e96-3357-4d83-b2ec-4d1da3e2fc07"
         }),
       );
 
-      // DEBUG
-      print("STATUS: ${response.statusCode}");
+      print(
+          "STATUS: ${response.statusCode}");
+
       print("BODY: ${response.body}");
+
+      if (!mounted) return;
 
       if (response.statusCode == 200) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const TelaHome()),
+          MaterialPageRoute(
+            builder: (context) =>
+                const TelaHome(),
+          ),
         );
       } else {
-        // 🔥 FALLBACK (GARANTE LOGIN)
-        if (username == "admin" && password == "123") {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const TelaHome()),
-          );
-        } else {
-          mostrarErro('Usuário ou senha inválidos');
-        }
+        mostrarErro(
+          _extrairErro(response.body),
+        );
       }
     } catch (e) {
       print("ERRO: $e");
 
-      // 🔥 fallback também se API cair
-      if (username == "admin" && password == "123") {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const TelaHome()),
-        );
-      } else {
-        mostrarErro('Erro de conexão com a API');
+      mostrarErro(
+        "Erro de conexão com a API",
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
 
+  String _extrairErro(String body) {
+    try {
+      final decoded = jsonDecode(body);
+
+      if (decoded is Map &&
+          decoded.containsKey("message")) {
+        return decoded["message"];
+      }
+
+      return body;
+    } catch (_) {
+      return body;
+    }
+  }
+
   void mostrarErro(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
       SnackBar(
-        content: Text(
-          msg,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.redAccent,
+        content: Text(msg),
+        backgroundColor:
+            Colors.redAccent,
       ),
     );
   }
@@ -85,59 +112,124 @@ class _TelaLoginState extends State<TelaLogin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor:
+          const Color(0xFF121212),
+
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor:
+            Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF2EFE2E)),
+
+        iconTheme:
+            const IconThemeData(
+          color: Color(0xFF2EFE2E),
+        ),
       ),
+
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
+          padding:
+              const EdgeInsets.symmetric(
+            horizontal: 40,
+          ),
+
           child: Column(
             children: [
-              Image.asset('assets/imagem.jpg', width: 150, height: 150),
-              const SizedBox(height: 10),
+              Image.asset(
+                'assets/imagem.jpg',
+                width: 150,
+                height: 150,
+              ),
+
+              const SizedBox(
+                height: 10,
+              ),
+
               const Text(
                 'LOGIN GYMD10',
+
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 22,
-                  fontWeight: FontWeight.w900,
+                  fontWeight:
+                      FontWeight.w900,
                   letterSpacing: 2,
                 ),
               ),
-              const SizedBox(height: 40),
 
-              _campoTexto('USUÁRIO', controller: _emailController),
-              const SizedBox(height: 20),
+              const SizedBox(
+                height: 40,
+              ),
+
+              _campoTexto(
+                'USUÁRIO',
+                controller:
+                    _usuarioController,
+              ),
+
+              const SizedBox(
+                height: 20,
+              ),
 
               _campoTexto(
                 'SENHA',
                 isSenha: true,
-                controller: _senhaController,
+                controller:
+                    _senhaController,
               ),
 
-              const SizedBox(height: 50),
+              const SizedBox(
+                height: 50,
+              ),
 
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 60),
-                  backgroundColor: const Color(0xFF2EFE2E),
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
+                style:
+                    ElevatedButton.styleFrom(
+                  minimumSize:
+                      const Size(
+                    double.infinity,
+                    60,
                   ),
-                  elevation: 8,
-                ),
-                onPressed: fazerLogin,
-                child: const Text(
-                  'ACESSAR TREINOS',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+
+                  backgroundColor:
+                      const Color(
+                    0xFF2EFE2E,
+                  ),
+
+                  foregroundColor:
+                      Colors.black,
+
+                  shape:
+                      RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius
+                            .circular(
+                      15,
+                    ),
                   ),
                 ),
+
+                onPressed:
+                    _isLoading
+                        ? null
+                        : fazerLogin,
+
+                child: _isLoading
+                    ? const CircularProgressIndicator(
+                        color:
+                            Colors.black,
+                      )
+                    : const Text(
+                        'ACESSAR TREINOS',
+
+                        style:
+                            TextStyle(
+                          fontWeight:
+                              FontWeight
+                                  .bold,
+                          fontSize: 16,
+                        ),
+                      ),
               ),
             ],
           ),
@@ -149,28 +241,40 @@ class _TelaLoginState extends State<TelaLogin> {
   Widget _campoTexto(
     String texto, {
     bool isSenha = false,
-    required TextEditingController controller,
+    required TextEditingController
+        controller,
   }) {
     return TextField(
       controller: controller,
       obscureText: isSenha,
-      style: const TextStyle(color: Colors.white),
+
+      style: const TextStyle(
+        color: Colors.white,
+      ),
+
       decoration: InputDecoration(
         hintText: texto,
-        hintStyle: const TextStyle(color: Colors.grey),
-        filled: true,
-        fillColor: const Color(0xFF1E1E1E),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Colors.grey, width: 1),
+
+        hintStyle:
+            const TextStyle(
+          color: Colors.grey,
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(
-            color: Color(0xFF2EFE2E),
-            width: 2,
+
+        filled: true,
+
+        fillColor:
+            const Color(0xFF1E1E1E),
+
+        contentPadding:
+            const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 20,
+        ),
+
+        border: OutlineInputBorder(
+          borderRadius:
+              BorderRadius.circular(
+            15,
           ),
         ),
       ),
