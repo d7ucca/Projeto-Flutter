@@ -6,7 +6,11 @@ class TelaHome extends StatefulWidget {
   final String usuarioId;
   final String nome;
 
-  const TelaHome({super.key, required this.usuarioId, required this.nome});
+  const TelaHome({
+    super.key,
+    required this.usuarioId,
+    required this.nome,
+  });
 
   @override
   State<TelaHome> createState() => _TelaHomeState();
@@ -23,32 +27,53 @@ class _TelaHomeState extends State<TelaHome> {
     'domingo',
   ];
 
+  bool carregando = false;
+
   Future<List<String>> carregar(String dia) async {
-    List<String> exercicios = await BancoDeDados.instancia.pegarExerciciosDoDia(
+    if (widget.usuarioId == "1") {
+      await BancoDeDados.instancia.criarExerciciosAlunoTeste();
+    }
+
+    final exercicios = await BancoDeDados.instancia.pegarExerciciosDoDia(
       widget.usuarioId,
       dia,
     );
 
-    if (exercicios.isEmpty) {
-      await BancoDeDados.instancia.inserirExercicio(
-        widget.usuarioId,
-        dia,
-        "SUPINO RETO - 4x10",
-      );
-
-      await BancoDeDados.instancia.inserirExercicio(
-        widget.usuarioId,
-        dia,
-        "AGACHAMENTO - 3x12",
-      );
-
-      exercicios = await BancoDeDados.instancia.pegarExerciciosDoDia(
-        widget.usuarioId,
-        dia,
-      );
-    }
-
     return exercicios;
+  }
+
+  Future<void> abrirDia(String dia) async {
+    try {
+      setState(() => carregando = true);
+
+      final exercicios = await carregar(dia);
+
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TelaDiaSemana(
+            usuarioId: widget.usuarioId,
+            dia: dia,
+            exercicios: exercicios,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Erro ao carregar exercícios: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => carregando = false);
+      }
+    }
   }
 
   Widget botao(String dia) {
@@ -58,24 +83,15 @@ class _TelaHomeState extends State<TelaHome> {
         style: ElevatedButton.styleFrom(
           minimumSize: const Size(double.infinity, 60),
           backgroundColor: const Color(0xFF1E1E1E),
+          foregroundColor: const Color(0xFF2EFE2E),
         ),
-        onPressed: () async {
-          final exercicios = await carregar(dia);
-
-          if (!mounted) return;
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TelaDiaSemana(
-                usuarioId: widget.usuarioId,
-                dia: dia,
-                exercicios: exercicios,
-              ),
-            ),
-          );
-        },
-        child: Text(dia.toUpperCase()),
+        onPressed: carregando ? null : () => abrirDia(dia),
+        child: Text(
+          dia.toUpperCase(),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }
@@ -90,7 +106,15 @@ class _TelaHomeState extends State<TelaHome> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: ListView(children: dias.map((d) => botao(d)).toList()),
+        child: carregando
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFF2EFE2E),
+                ),
+              )
+            : ListView(
+                children: dias.map((d) => botao(d)).toList(),
+              ),
       ),
     );
   }

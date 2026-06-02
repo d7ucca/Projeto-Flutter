@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'banco.dart';
 
 class TelaDiaSemana extends StatefulWidget {
   final String usuarioId;
@@ -19,7 +18,6 @@ class TelaDiaSemana extends StatefulWidget {
 
 class _TelaDiaSemanaState extends State<TelaDiaSemana> {
   late List<String> lista;
-  final TextEditingController controller = TextEditingController();
 
   @override
   void initState() {
@@ -27,76 +25,41 @@ class _TelaDiaSemanaState extends State<TelaDiaSemana> {
     lista = widget.exercicios;
   }
 
-  Future<void> adicionar() async {
-    final texto = controller.text.trim();
-    if (texto.isEmpty) return;
-
-    await BancoDeDados.instancia.inserirExercicio(
-      widget.usuarioId,
-      widget.dia,
-      texto,
-    );
-
-    final atualizada = await BancoDeDados.instancia.pegarExerciciosDoDia(
-      widget.usuarioId,
-      widget.dia,
-    );
-
-    setState(() {
-      lista = atualizada;
-    });
-
-    controller.clear();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
-
       appBar: AppBar(
         backgroundColor: const Color(0xFF121212),
         title: Text(widget.dia.toUpperCase()),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            TextField(
-              controller: controller,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                hintText: "Novo exercício",
-                hintStyle: TextStyle(color: Colors.grey),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            ElevatedButton(
-              onPressed: adicionar,
-              child: const Text("ADICIONAR"),
-            ),
-
-            const SizedBox(height: 20),
-
-            Expanded(
-              child: ListView.builder(
+        child: lista.isEmpty
+            ? const Center(
+                child: Text(
+                  "Nenhum exercício cadastrado para este dia.",
+                  style: TextStyle(color: Colors.white),
+                ),
+              )
+            : ListView.builder(
                 itemCount: lista.length,
                 itemBuilder: (context, index) {
-                  return ListTile(
-                    leading: const Icon(Icons.fitness_center),
-                    title: Text(
-                      lista[index],
-                      style: const TextStyle(color: Colors.white),
+                  return Card(
+                    color: const Color(0xFF1E1E1E),
+                    child: ListTile(
+                      leading: const Icon(
+                        Icons.fitness_center,
+                        color: Color(0xFF2EFE2E),
+                      ),
+                      title: Text(
+                        lista[index],
+                        style: const TextStyle(color: Colors.white),
+                      ),
                     ),
                   );
                 },
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
